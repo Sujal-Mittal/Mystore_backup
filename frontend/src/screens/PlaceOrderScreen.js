@@ -15,13 +15,10 @@ const PlaceOrderScreen = ({ history }) => {
 
   if (!cart.shippingAddress.address) {
     history.push('/shipping')
-  } else if (!cart.paymentMethod) {
-    history.push('/payment')
   }
-  //   Calculate prices
-  const addDecimals = (num) => {
-    return (Math.round(num * 100) / 100).toFixed(2)
-  }
+
+  // Calculate prices
+  const addDecimals = (num) => (Math.round(num * 100) / 100).toFixed(2)
 
   cart.itemsPrice = addDecimals(
     cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0)
@@ -43,15 +40,14 @@ const PlaceOrderScreen = ({ history }) => {
       dispatch({ type: USER_DETAILS_RESET })
       dispatch({ type: ORDER_CREATE_RESET })
     }
-    // eslint-disable-next-line
-  }, [history, success])
+  }, [history, success, dispatch, order])
 
   const placeOrderHandler = () => {
     dispatch(
       createOrder({
         orderItems: cart.cartItems,
         shippingAddress: cart.shippingAddress,
-        paymentMethod: cart.paymentMethod,
+        paymentMethod: 'Cash on Delivery',
         itemsPrice: cart.itemsPrice,
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
@@ -62,24 +58,17 @@ const PlaceOrderScreen = ({ history }) => {
 
   return (
     <>
-      <CheckoutSteps step1 step2 step3 step4 />
+      <CheckoutSteps step1 step2 step3 />
       <Row>
         <Col md={8}>
           <ListGroup variant='flush'>
             <ListGroup.Item>
               <h2>Shipping</h2>
               <p>
-                <strong>Address:</strong>
-                {cart.shippingAddress.address}, {cart.shippingAddress.city}{' '}
-                {cart.shippingAddress.postalCode},{' '}
+                <strong>Address:</strong> {cart.shippingAddress.address},{' '}
+                {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{' '}
                 {cart.shippingAddress.country}
               </p>
-            </ListGroup.Item>
-
-            <ListGroup.Item>
-              <h2>Payment Method</h2>
-              <strong>Method: </strong>
-              {cart.paymentMethod}
             </ListGroup.Item>
 
             <ListGroup.Item>
@@ -145,14 +134,16 @@ const PlaceOrderScreen = ({ history }) => {
                   <Col>${cart.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              <ListGroup.Item>
-                {error && <Message variant='danger'>{error}</Message>}
-              </ListGroup.Item>
+              {error && (
+                <ListGroup.Item>
+                  <Message variant='danger'>{error}</Message>
+                </ListGroup.Item>
+              )}
               <ListGroup.Item>
                 <Button
                   type='button'
                   className='btn-block'
-                  disabled={cart.cartItems === 0}
+                  disabled={cart.cartItems.length === 0}
                   onClick={placeOrderHandler}
                 >
                   Place Order
